@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="zh_cn"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> React源码阅读系列 - §0 简介 Intro · Jeremy's Note</title><meta name="description" content="React 源码阅读 笔记"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://jeremywu.info/atom.xml" title="Jeremy's Note"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/JeremyWuuuuu" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">React源码阅读系列 - §0 简介 Intro</h1><div class="post-info">2018年7月16日</div><div class="post-content"><p><strong>关键词:</strong> <code>React</code> <code>源码分析</code></p>
+<h1 id="React-源码阅读"><a href="#React-源码阅读" class="headerlink" title="React 源码阅读"></a>React 源码阅读</h1><p><strong>&emsp;&emsp;&nbsp;最近由于工作变动, 被调到了新的部门, 新的部门里的很多代码并不熟悉, 便只能硬着头皮看下去, 随即发现了一个问题, 跳出舒适圈的我, 在看代码的过程中, 学到了非常多的东西, 想要想办法证明自己, 于是便想开这么一篇React的源码阅读的坑, 准备花一段时间来阅读以及记录自己对源码阅读后的理解和感悟.</strong></p>
+<h3 id="React版本"><a href="#React版本" class="headerlink" title="React版本"></a>React版本</h3><div class="tip"><br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"Name"</span>: <span class="string">"React"</span>,</span><br><span class="line">  <span class="attr">"Version"</span>: <span class="string">"15.6.2"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br><br></div>
+
+<a id="more"></a>
+<h3 id="核心概念-Core-Concepts"><a href="#核心概念-Core-Concepts" class="headerlink" title="核心概念 (Core Concepts):"></a>核心概念 (Core Concepts):</h3><p><strong>0. 基础部分 (Pre-requirement)</strong></p>
+<ul>
+<li>生命周期</li>
+<li>从 JSX (TSX) 到 JS</li>
+</ul>
+<p><strong>1. 启动部分 (在应用启动时的代码分析)</strong></p>
+<ul>
+<li>从组件 (<strong>Component</strong>) 到 虚拟节点 (<strong>Virtual Node</strong>)</li>
+<li>从虚拟节点 (<strong>Virtual Node</strong>) 到 真实DOM节点 (<strong>Actual Node</strong>)</li>
+</ul>
+<p><strong>2. 存在周期 (在存在周期时的代码分析)</strong></p>
+<ul>
+<li>事件机制 (Event Handling)</li>
+<li>事务处理 (Transaction Operation)</li>
+<li>更新操作 (Updating Action)<br>i. 数据更新 (Data Updating)<br>ii. 视图更新 (Layout Updating)</li>
+<li>组件间的通信 (Component Communication)</li>
+<li>Diff的算法分析 (Diff Algorithm)</li>
+</ul>
+<p><strong>3. 总结</strong></p>
+</div></article></div></main><footer><div class="paginator"><a href="/2018/07/17/React源码阅读系列-§1.1-生命周期-Lifecycle/" class="prev">PREV</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
+var disqus_identifier = '2018/07/16/React源码阅读系列 - §0 简介 Intro/';
+var disqus_title = 'React源码阅读系列 - §0 简介 Intro';
+var disqus_url = 'https://jeremywu.info/2018/07/16/React源码阅读系列 - §0 简介 Intro/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//jeremywuuuuu.disqus.com/count.js" async></script><div class="copyright"><p>© 2015 - 2018 <a href="https://jeremywu.info">Jeremy Wu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
