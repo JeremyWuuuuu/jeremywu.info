@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> React源码阅读系列-§2.1-生命周期过程详解 · Jeremy's Note</title><meta name="description" content="React生命周期函数详解"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://jeremywu.info/atom.xml" title="Jeremy's Note"></head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/JeremyWuuuuu" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">React源码阅读系列-§2.1-生命周期过程详解</h1><div class="post-info">2018年7月26日</div><div class="post-content"><p><strong>关键字: </strong> <code>生命周期</code> <code>钩子函数</code></p>
+<p>在<a href="/2018/07/17/React源码阅读系列-§1.1-生命周期-Lifecycle">§1.1节</a>大概的了解了React的生命周期以及在各个阶段的生命周期钩子函数的调用.</p>
+<p>在本节主要详细讲解各个生命周期函数, 以及一些对性能上能够产生优化的细节.</p>
+<a id="more"></a>
+<div class="tip"><br>以下面内容仅适用于用户自定义组件, 无状态组件不经历大部分钩子函数的调用.<br></div>
+
+<hr>
+<h3 id="生命周期的阶段"><a href="#生命周期的阶段" class="headerlink" title="生命周期的阶段"></a>生命周期的阶段</h3><p><strong>每一个</strong>React的组件都会经历它的生命周期.</p>
+<h4 id="1-挂载阶段-Mounting-Period"><a href="#1-挂载阶段-Mounting-Period" class="headerlink" title="1. 挂载阶段 (Mounting Period)"></a>1. 挂载阶段 (Mounting Period)</h4><ul>
+<li><p>1) 组件被实例化</p>
+<p>在之前的<a href="/2018/07/21/React源码阅读系列-§1.4-来人-给我new一下">§1.3节</a>讲到每一个<code>CustomComponent</code>都是被<code>CompositeComponentWrapper</code>给包裹了起来, 实际被实例化的地方是在<code>ReactCompositeComponent._constructComponentWithoutOwner</code>方法中.</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">new</span> CustomComponent(publicProps, publicContext, updateQueue);</span><br></pre></td></tr></table></figure>
+<p>此处就是所有的组件的构造函数被调用的地方. 为的是把实例存在<code>ReactInstanceMap</code>中, 方便使用, 例如<code>React.findDOMNode()</code>方法就通过这个<code>ReactInstanceMap</code>拿到了实例通过实例在对应的<code>ReactDOMTree</code>中找到了对应的DOM节点.</p>
+</li>
+<li><p>2) componentWillMount的调用</p>
+<p>无状态组件是不经历这一步的, 如果用户有添加<code>componentWillMount</code>这个方法, 那么该方法将会在<code>performInitialMount</code>方法内被调用.</p>
+</li>
+<li><p>3) render的调用时机</p>
+<p>render被调用有两种情况. </p>
+<ol>
+<li><p>第一种情况是如果组件本身是无状态组件那么在</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> renderedElement;</span><br><span class="line"><span class="comment">// 如果是无状态的组件返回false, 否则返回true.</span></span><br><span class="line"><span class="keyword">var</span> doConstruct = shouldConstruct(Component);</span><br><span class="line"><span class="keyword">var</span> inst = <span class="keyword">this</span>._constructComponent(</span><br><span class="line">    doConstruct, <span class="comment">// false</span></span><br><span class="line">    publicProps,</span><br><span class="line">    publicContext,</span><br><span class="line">    updateQueue,</span><br><span class="line">  );</span><br><span class="line"><span class="keyword">if</span> (!doConstruct &amp;&amp; (inst == <span class="literal">null</span> || inst.render == <span class="literal">null</span>)) &#123;</span><br><span class="line">  renderedElement = inst; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方法内部这个组件的<code>render</code>方法就可以看做已经被调用过了, 因为本身就只是一个函数类型的组件.</p>
+</li>
+<li>第二种是如果并非无状态组件, 那么<code>render</code>的调用发生在<code>performInitialMount</code>方法中<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在不满足上面的条件时, renderedElement自然为undefined.</span></span><br><span class="line"><span class="keyword">if</span> (renderedElement === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    renderedElement = <span class="keyword">this</span>._renderValidatedComponent(); <span class="comment">// 此处调用inst.render()</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这里的renderedElement就是在第<a href="/2018/07/18/React源码阅读系列-§1.2先有节点后有天%20ReactCreateElement">§1.2节</a>通过<code>.render()</code>方法返回出来的<code>React.createElement()</code>的结构. 是一个<code>ReactElement</code>的类实例. 然后会被用来通过进行一个递归调用, 所有的自定义组件都会被转换到<code>ReactDOMComponent</code>, 然后通过<code>ReactDOMComponent.mountComponent</code>方法返回一段<code>ReactNode</code>的对象实例</p>
+<p>最后调用render方法之后得到的markup类似于:</p>
+<img src="/2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/markup.png" title="markup">
+</li>
+</ul>
+<h3 id="…未完待续"><a href="#…未完待续" class="headerlink" title="…未完待续"></a>…未完待续</h3></div></article></div></main><footer><div class="paginator"><a href="/2018/07/22/React源码阅读系列-§1.5-ReactDOM-render干了啥/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
+var disqus_identifier = '2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/';
+var disqus_title = 'React源码阅读系列-§2.1-生命周期过程详解';
+var disqus_url = 'https://jeremywu.info/2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/';
+(function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+})();</script><script id="dsq-count-scr" src="//jeremywuuuuu.disqus.com/count.js" async></script><div class="copyright"><p>© 2015 - 2018 <a href="https://jeremywu.info">Jeremy Wu</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
