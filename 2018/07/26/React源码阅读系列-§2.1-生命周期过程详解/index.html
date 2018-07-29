@@ -25,12 +25,37 @@
 <li>第二种是如果并非无状态组件, 那么<code>render</code>的调用发生在<code>performInitialMount</code>方法中<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在不满足上面的条件时, renderedElement自然为undefined.</span></span><br><span class="line"><span class="keyword">if</span> (renderedElement === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    renderedElement = <span class="keyword">this</span>._renderValidatedComponent(); <span class="comment">// 此处调用inst.render()</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
-<p>这里的renderedElement就是在第<a href="/2018/07/18/React源码阅读系列-§1.2先有节点后有天%20ReactCreateElement">§1.2节</a>通过<code>.render()</code>方法返回出来的<code>React.createElement()</code>的结构. 是一个<code>ReactElement</code>的类实例. 然后会被用来通过进行一个递归调用, 所有的自定义组件都会被转换到<code>ReactDOMComponent</code>, 然后通过<code>ReactDOMComponent.mountComponent</code>方法返回一段<code>ReactNode</code>的对象实例</p>
-<p>最后调用render方法之后得到的markup类似于:</p>
+<p>这里的<code>renderedElement</code>就是在第<a href="/2018/07/18/React源码阅读系列-§1.2先有节点后有天%20ReactCreateElement">§1.2节</a>通过<code>render()</code>方法返回出来的<code>React.createElement()</code>的结构. 是一个<code>ReactElement</code>的类实例. 然后会被用来通过进行一个递归调用, 所有的自定义组件都会被转换到<code>ReactDOMComponent</code>, 然后通过<code>ReactDOMComponent.mountComponent</code>方法返回一段<code>ReactNode</code>的对象实例</p>
+<p>最后调用<code>render</code>方法之后得到的markup类似于:</p>
 <img src="/2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/markup.png" title="markup">
+<p>从<code>ReactCompositeComponent</code>到<code>ReactDOMComponent</code>, 然后再被转换成为真实的<code>DOM</code>节点<strong>(划重点: DOM节点内只有字符串)</strong>. 在<code>ReactDOMComponent</code>当中有一个比较重要的方法: </p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>._createInitialChildren = <span class="function"><span class="keyword">function</span>(<span class="params">transaction, props, context, lazyTree</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> innerHTML = props.dangerouslySetInnerHTML;</span><br><span class="line">  <span class="keyword">if</span> (innerHTML != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (innerHTML.__html != <span class="literal">null</span>) &#123;</span><br><span class="line">      DOMLazyTree.queueHTML(lazyTree, innerHTML.__html);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> contentToUse = CONTENT_TYPES[<span class="keyword">typeof</span> props.children]</span><br><span class="line">      ? props.children</span><br><span class="line">      : <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">var</span> childrenToUse = contentToUse != <span class="literal">null</span> ? <span class="literal">null</span> : props.children;</span><br><span class="line">    <span class="keyword">if</span> (contentToUse != <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (contentToUse !== <span class="string">''</span>) &#123;</span><br><span class="line">        DOMLazyTree.queueText(lazyTree, contentToUse);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (childrenToUse != <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">var</span> mountImages = <span class="keyword">this</span>.mountChildren(</span><br><span class="line">        childrenToUse,</span><br><span class="line">        transaction,</span><br><span class="line">        context,</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; mountImages.length; i++) &#123;</span><br><span class="line">        DOMLazyTree.queueChild(lazyTree, mountImages[i]);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简单的解释一下这段方法:</p>
+<ol>
+<li>首先先去判断了是否有强行塞入<code>innerHTML</code>的这种做法, 很显然官方本身是不推荐用户这样去使用, 但是在某一些的特定场景下, 必须要用到这种方法.<ul>
+<li><code>true</code>, 就把<code>__html</code>作为当前节点的<code>innerHTML</code>.</li>
+<li><code>false</code>, 继续进行下一步.</li>
+</ul>
+</li>
+<li>接着去判断当前的<code>children</code>是否是<code>CONTENT_TYPES</code>这个枚举类的成员.<ul>
+<li><code>true</code>, 那就把<code>children</code>塞给当前的节点作为<code>innerHTML</code>.</li>
+<li><code>false</code>, 那么就证明现在的这个<code>children</code>并非是一个<code>DOM</code>节点而是一个自定义的组件. 那就继续调用<code>instantiateReactComponent</code>方法来实例化<code>children</code>直到所有的子节点被创建完成.<div class="tip">注意: 此处是一个递归调用的过程</div>
+
 </li>
 </ul>
-<h3 id="…未完待续"><a href="#…未完待续" class="headerlink" title="…未完待续"></a>…未完待续</h3></div></article></div></main><footer><div class="paginator"><a href="/2018/07/22/React源码阅读系列-§1.5-ReactDOM-render干了啥/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
+</li>
+</ol>
+<p>到这个地方, 基本<code>render</code>方法的调用就结束了, 调用完成的结果就是上面图例的<code>markup</code>对象.</p>
+</li>
+</ul>
+<ul>
+<li><p>4) componentDidMount的调用: </p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (inst.componentDidMount) &#123;</span><br><span class="line">  transaction.getReactMountReady().enqueue(inst.componentDidMount, inst);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这里React的开发者们很聪明的采用了一个队列的形式, 采用批处理的方式来调用<code>componentDidMount</code>的方法.<br>到这个地方, React的挂载阶段基本就已经结束了. 对于<code>事务处理</code>以及<code>事件机制</code>还有<code>对象池</code>的概念, 到后面会再说到.</p>
+</li>
+</ul>
+<h4 id="2-存在阶段"><a href="#2-存在阶段" class="headerlink" title="2. 存在阶段"></a>2. 存在阶段</h4><p>  存在阶段主要对应的主要是对浏览器事件的一个响应, 因为用户操作而触发的一系列浏览器事件.</p>
+<h3 id="未完待续…"><a href="#未完待续…" class="headerlink" title="未完待续…"></a>未完待续…</h3></div></article></div></main><footer><div class="paginator"><a href="/2018/07/22/React源码阅读系列-§1.5-ReactDOM-render干了啥/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
 var disqus_identifier = '2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/';
 var disqus_title = 'React源码阅读系列-§2.1-生命周期过程详解';
 var disqus_url = 'https://jeremywu.info/2018/07/26/React源码阅读系列-§2.1-生命周期过程详解/';
