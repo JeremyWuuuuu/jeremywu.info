@@ -32,10 +32,10 @@
 <p>条件循环<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">mut</span> counter = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> counter &lt; <span class="number">10</span> &#123;</span><br><span class="line">  counter += <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h4 id="for"><a href="#for" class="headerlink" title="for"></a>for</h4><p><code>for</code> 循环相对来说比较特殊, 只能用在那些实现过 <code>iterator</code> 特性的对象上, 没有实现这个特性的对象是没有办法用 <code>for</code> 语句表达的<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> item <span class="keyword">in</span> <span class="number">1</span>..<span class="number">11</span> &#123; <span class="comment">// from..to 产出一个区间为 [from, to) Range 类型的对象, 实现了 iterator </span></span><br><span class="line">  <span class="built_in">println!</span>(<span class="string">"&#123;:?&#125;"</span>, item);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>以上就是 Rust 中的控制流, 每一个都提供了非常强大的功能, 实际应用中根据不同的场景应用, 来达到不同的目的.</p>
-</div></article></div></main><footer><div class="paginator"><a href="/2019/03/10/Rust 的类型系统/" class="next">下一篇</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
-var disqus_identifier = '2019/03/12/Rust 控制流/';
+</div></article></div></main><footer><div class="paginator"><a href="/2019/03/10/Rust的类型系统/" class="next">NEXT</a></div><div id="disqus_thread"></div><script>var disqus_shortname = 'jeremywuuuuu';
+var disqus_identifier = '2019/03/12/Rust的控制流/';
 var disqus_title = 'Rust 控制流';
-var disqus_url = 'https://jeremywu.info/2019/03/12/Rust 控制流/';
+var disqus_url = 'https://jeremywu.info/2019/03/12/Rust的控制流/';
 (function() {
     var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
     dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
