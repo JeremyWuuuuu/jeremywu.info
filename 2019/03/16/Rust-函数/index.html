@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html  lang="zh">
+<head>
+    <meta charset="utf-8">
+<title>Rust 函数 - Jeremy&#39;s Note</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+
+
+    <meta name="description" content="关键字:  Rust 函数 函数是编程语言中对于某些现象或过程的抽象, 函数在 Rust 中扮演着重要的作用, 与 Javascript 相同, 函数在 Rust 中也是作为一等公民的存在, 这也正意味着, Rust 中的函数可以被作为一个数据类型在程序中穿插传递.">
+<meta name="keywords" content="Rust">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Rust 函数">
+<meta property="og:url" content="https://jeremywu.info/2019/03/16/Rust-函数/index.html">
+<meta property="og:site_name" content="Jeremy&#39;s Note">
+<meta property="og:description" content="关键字:  Rust 函数 函数是编程语言中对于某些现象或过程的抽象, 函数在 Rust 中扮演着重要的作用, 与 Javascript 相同, 函数在 Rust 中也是作为一等公民的存在, 这也正意味着, Rust 中的函数可以被作为一个数据类型在程序中穿插传递.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://jeremywu.info/thumbnails/rustlang.jpg">
+<meta property="og:updated_time" content="2019-03-31T06:53:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rust 函数">
+<meta name="twitter:description" content="关键字:  Rust 函数 函数是编程语言中对于某些现象或过程的抽象, 函数在 Rust 中扮演着重要的作用, 与 Javascript 相同, 函数在 Rust 中也是作为一等公民的存在, 这也正意味着, Rust 中的函数可以被作为一个数据类型在程序中穿插传递.">
+<meta name="twitter:image" content="https://jeremywu.info/thumbnails/rustlang.jpg">
+
+
+
+
+
+<link rel="alternative" href="/atom.xml" title="Rust 函数" type="application/atom+xml">
+
+
+
+<link rel="icon" href="/images/favicon.ico">
+
+
+<link rel="stylesheet" href="https://unpkg.com/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://unpkg.com/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://unpkg.com/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://unpkg.com/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://unpkg.com/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+    
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/images/logo.svg" alt="Rust 函数" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item"
+                href="/">主页</a>
+                
+                <a class="navbar-item"
+                href="/archives">归档</a>
+                
+                <a class="navbar-item"
+                href="/categories">分类</a>
+                
+                <a class="navbar-item"
+                href="/tags">标签</a>
+                
+                <a class="navbar-item"
+                href="/about">关于</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="http://github.com/jeremywuuuuu">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="搜索" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span  class="image is-7by1">
+            <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 函数">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2019-03-16T15:38:24.000Z">2019-03-16</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    7 分钟 读完 (大约 1120 个字)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                Rust 函数
+            
+        </h1>
+        <div class="content">
+            <p><strong>关键字: </strong> <code>Rust</code> <code>函数</code></p>
+<p>函数是编程语言中对于某些现象或过程的抽象, 函数在 Rust 中扮演着重要的作用, 与 <code>Javascript</code> 相同, 函数在 Rust 中也是作为<a href="https://zh.wikipedia.org/wiki/%E5%A4%B4%E7%AD%89%E5%87%BD%E6%95%B0" target="_blank" rel="noopener">一等公民</a>的存在, 这也正意味着, Rust 中的函数可以被作为一个数据类型在程序中穿插传递.</p>
+<a id="more"></a>
+<h3 id="定义一个函数"><a href="#定义一个函数" class="headerlink" title="定义一个函数"></a>定义一个函数</h3><p>在 Rust 中, 无论是在特性中, 还是 <code>impl</code> 块中, 或是在其他地方声明一个函数, 都是使用一样的写法, 和 <code>Javascript</code> 不同(既有函数声明, 也有函数表达式).<br>Rust 中的函数声明: <code>fn name(arg: type) -&gt; returnType { body block }</code></p>
+<h4 id="普通函数"><a href="#普通函数" class="headerlink" title="普通函数"></a>普通函数</h4><figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add</span></span>(a: <span class="hljs-built_in">isize</span>, b: <span class="hljs-built_in">isize</span>) -&gt; <span class="hljs-built_in">isize</span> &#123;</span><br><span class="line">  a + b</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="函数做为参数"><a href="#函数做为参数" class="headerlink" title="函数做为参数"></a>函数做为参数</h4><figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> </span>&lt;T&gt;inner_add(a: T, b: T, add: <span class="hljs-function"><span class="hljs-keyword">fn</span></span>(a: T, b: T) -&gt; T) -&gt; T &#123;</span><br><span class="line">  add(a, b)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">inner_add(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, |a, b| a + b);</span><br></pre></td></tr></table></figure>
+<h4 id="函数返回"><a href="#函数返回" class="headerlink" title="函数返回"></a>函数返回</h4><p>声明一个函数, 并且返回一个返回值, 在大多数语言中都需要用到, <code>return</code> 这个关键字, 但在 Rust 中, 这个关键字可以省略掉, 用更简单的方式返回. 如例子:</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add</span></span>(a: <span class="hljs-built_in">i32</span>, b: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">i32</span> &#123;</span><br><span class="line">  a + b <span class="hljs-comment">// 注意这里没有跟分分号</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>或者显式地返回这个语句</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add</span></span>(a: <span class="hljs-built_in">i32</span>, b: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">i32</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">return</span> a + b; <span class="hljs-comment">// 注意这里跟分号</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="tip"><br>但是如果在函数块中, 最后一条语句以 <code>;</code> 结尾, 并没有 <code>return</code> 关键字, 那么编译器便会自动在代码中插入 <code>()</code> 这个特殊的元组作为返回值, 所以如果一个函数没有声明返回值, 都会以一个 <code>()</code> 作为返回, 当然, 这也是可选择的, 若不想要函数返回任何值, 可以将返回值设置成 <code>!</code>, 代表这个函数不返回任何值.<br></div>
+
+<p><code>return</code> 关键字实际也是很有用的, 比如在一段条件语句中, 提前返回结果</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">ahead_return</span></span>() -&gt; <span class="hljs-built_in">String</span> &#123;</span><br><span class="line">  <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">0</span>..<span class="hljs-number">10</span> &#123;</span><br><span class="line">    <span class="hljs-keyword">if</span> i == <span class="hljs-number">5</span> &#123;</span><br><span class="line">      <span class="hljs-keyword">return</span> <span class="hljs-string">"ahead returned"</span>.to_string(); <span class="hljs-comment">// 提前返回</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="hljs-string">"normal returned"</span>.to_string() <span class="hljs-comment">//直接返回</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="返回多个值的函数"><a href="#返回多个值的函数" class="headerlink" title="返回多个值的函数"></a>返回多个值的函数</h4><p>在 Rust 中, 一个函数的返回,  可以没有值, 可以有一个值, 也可以是多个值, 在 Rust 中, 函数要返回多个值, 可以直接采用返回一个元组, 如果函数没有返回值.</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">tuple_return</span></span>() -&gt; (<span class="hljs-built_in">i32</span>, <span class="hljs-built_in">i32</span>) &#123;</span><br><span class="line">  (<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="返回函数的函数"><a href="#返回函数的函数" class="headerlink" title="返回函数的函数"></a>返回函数的函数</h4><p>同样, Rust 不止可以传入函数作为参数, 还能够返回一个函数作为返回值.</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-class"><span class="hljs-keyword">type</span> <span class="hljs-title">is_one</span></span> = <span class="hljs-function"><span class="hljs-keyword">fn</span></span>(arg: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">bool</span>;</span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">returned</span></span>(arg: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">bool</span> &#123;</span><br><span class="line">  arg == <span class="hljs-number">1i32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">caller</span></span>() -&gt; is_one &#123;</span><br><span class="line">  returned</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="hljs-built_in">println!</span>(<span class="hljs-string">"&#123;:?&#125;"</span>, caller()(<span class="hljs-number">1</span>)); <span class="hljs-comment">// 是不是有一股很熟悉的感觉</span></span><br></pre></td></tr></table></figure>
+<h3 id="作用域与生命周期"><a href="#作用域与生命周期" class="headerlink" title=" 作用域与生命周期"></a> 作用域与生命周期</h3><p>在介绍闭包之前, 需要先介绍一下 Rust 中的作用域相关的知识.</p>
+<p>Rust 中所有的作用域都是<strong>静态作用域 (Lexical Scope)</strong>, 通过成对的花括号来创建一个新的作用域</p>
+<figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add</span></span>(a: <span class="hljs-built_in">i32</span>, b: <span class="hljs-built_in">i32</span>) &#123;</span><br><span class="line">  <span class="hljs-comment">// 作用域 1</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="hljs-comment">// 作用域 2</span></span><br><span class="line">    &#123;</span><br><span class="line">       <span class="hljs-comment">// 作用域 3</span></span><br><span class="line">      <span class="hljs-keyword">let</span> s = <span class="hljs-string">"some string"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="hljs-comment">// 作用域 3 退出, s 被释放</span></span><br><span class="line">    <span class="hljs-built_in">println!</span>(<span class="hljs-string">"&#123;:?&#125;"</span>, s); <span class="hljs-comment">// error[E0425]: cannot find value `s` in this scope</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="闭包-Closure"><a href="#闭包-Closure" class="headerlink" title="闭包 (Closure)"></a>闭包 (Closure)</h3><p>在 Rust 中的闭包又叫做一个匿名函数, 但闭包和普通的函数有几点不同</p>
+<ul>
+<li>能够捕捉调当前作用域里的变量</li>
+<li>编译器能够自动推断输入和返回</li>
+</ul>
+<p>在 Rust 中最常用到闭包的地方就是产生子线程, 和迭代器的一些操作:<br>如: 产生一个子线程, 然后计算返回<br><figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">use</span> std::thread;</span><br><span class="line"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">main</span></span>() &#123;</span><br><span class="line">  <span class="hljs-keyword">let</span> a = <span class="hljs-built_in">String</span>::from(<span class="hljs-string">"Parent string"</span>);</span><br><span class="line">  <span class="hljs-keyword">let</span> child = thread::spawn(<span class="hljs-keyword">move</span> || &#123;</span><br><span class="line">    <span class="hljs-built_in">println!</span>(<span class="hljs-string">"String from parent thread &#123;:?&#125;"</span>, a);</span><br><span class="line">    <span class="hljs-comment">// some work here</span></span><br><span class="line">    <span class="hljs-keyword">return</span> <span class="hljs-built_in">String</span>::from(<span class="hljs-string">"child thread string"</span>);</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="hljs-comment">// some work here</span></span><br><span class="line">  <span class="hljs-keyword">let</span> res = child.join();</span><br><span class="line">  <span class="hljs-built_in">println!</span>(<span class="hljs-string">"&#123;:?&#125;"</span>, a); <span class="hljs-comment">// error[E0382]: borrow of moved value: `a`</span></span><br><span class="line">  <span class="hljs-built_in">println!</span>(<span class="hljs-string">"&#123;:?&#125;"</span>, res.unwrap());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这个例子还展示了闭包的 <code>move</code> 关键字, 这个关键字可以把闭包函数体中用到过的变量的所有权转移到闭包内, 这样一来, 闭包外的变量的所有权就被转移了, 因此, 这个变量也不存在于这个作用域中, 它的生命周期就属于当前这个闭包的作用域, 当闭包退出的时候, 那么这个变量也被回收了.<br>或者对迭代器做操作<br><figure class="highlight rust hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">let</span> v = <span class="hljs-built_in">vec!</span>[<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>, <span class="hljs-number">5</span>, <span class="hljs-number">6</span>, <span class="hljs-number">7</span>, <span class="hljs-number">8</span>, <span class="hljs-number">9</span>, <span class="hljs-number">10</span>];</span><br><span class="line"><span class="hljs-keyword">let</span> mapped: <span class="hljs-built_in">Vec</span>&lt;<span class="hljs-built_in">i32</span>&gt; = v.into_iter().map(|val| val + <span class="hljs-number">1</span> ).collect();</span><br><span class="line"><span class="hljs-built_in">println!</span>(<span class="hljs-string">"&#123;:?&#125;"</span>, mapped); <span class="hljs-comment">// [2, 3, 4, 5, 6, 7, 8, 9, 10, 11];</span></span><br></pre></td></tr></table></figure></p>
+<p><br>这些都是很典型的闭包用例, 同函数一样, 闭包既可以作为参数, 也可以作为返回. 这些也只是 Rust 语言中函数使用的冰山一角, 函数有非常强大的功能.</p>
+<h4 id="To-be-continued-…"><a href="#To-be-continued-…" class="headerlink" title="To be continued …"></a>To be continued …</h4>
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/Rust/">Rust</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3>
+        <div class="buttons is-centered">
+            
+                
+<a class="button is-success donate">
+    <span class="icon is-small">
+        <i class="fab fa-weixin"></i>
+    </span>
+    <span>微信</span>
+    <div class="qrcode"><img src="/images/wechat_award.JPG" alt="微信"></div>
+</a>
+
+                
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        <div class="level-start">
+            <a class="level level-item has-link-grey  article-nav-prev" href="/2019/03/28/react-16/">
+                <i class="level-item fas fa-chevron-left"></i>
+                <span class="level-item">react 16 逆向系列</span>
+            </a>
+        </div>
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/03/13/Rust-运算符/">
+                <span class="level-item">Rust 运算符</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="title is-5 has-text-weight-normal">评论</h3>
+        
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://jeremywu.info/2019/03/16/Rust-函数/';
+        this.page.identifier = '2019/03/16/Rust-函数/';
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'jeremywuuuuu' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+    </div>
+</div>
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered">
+                <div>
+                    
+                        <figure class="image container is-128x128 has-mb-6">
+                            <img class="is-rounded" src="https://avatars1.githubusercontent.com/u/15975785?s=400&amp;u=13cb1c03b97f7d290a138111bd614ace3bfc55f0&amp;v=4" alt="Jeremy Wu">
+                        </figure>
+                    
+                    
+                    <p class="is-size-4 is-block">
+                        Jeremy Wu
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        Software Developer
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Shanghai, China</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        文章
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        15
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        分类
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        3
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        标签
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        3
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="http://github.com/jeremywuuuuu" target="_blank">
+                关注我</a>
+        </div>
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Github" href="http://github.com/jeremywuuuuu">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Facebook" href="http://facebook.com">
+                
+                <i class="fab fa-facebook"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Twitter" href="http://twitter.com/591449570">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Dribbble" href="http://dribbble.com">
+                
+                <i class="fab fa-dribbble"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="RSS" href="/">
+                
+                <i class="fas fa-rss"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+    
+        
+
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                分类
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/React16逆向系列/">
+            <span class="level-start">
+                <span class="level-item">React16逆向系列</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">2</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/React源码阅读系列/">
+            <span class="level-start">
+                <span class="level-item">React源码阅读系列</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">9</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/Rust-lang/">
+            <span class="level-start">
+                <span class="level-item">Rust lang</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            标签云
+        </h3>
+        <a href="/tags/React源码阅读/" style="font-size: 20px;">React源码阅读</a> <a href="/tags/Rust/" style="font-size: 15px;">Rust</a> <a href="/tags/react16-x-源码逆向/" style="font-size: 10px;">react16.x 源码逆向</a>
+    </div>
+</div>
+
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="0b0001从分片调度来看React的调度机制">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-31T09:06:38.000Z">2019-03-31</time></div>
+                    <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="has-link-black-ter is-size-6">0b0001从分片调度来看React的调度机制</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/28/react-16/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="react 16 逆向系列">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-28T15:43:00.000Z">2019-03-28</time></div>
+                    <a href="/2019/03/28/react-16/" class="has-link-black-ter is-size-6">react 16 逆向系列</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/16/Rust-函数/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 函数">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-16T15:38:24.000Z">2019-03-16</time></div>
+                    <a href="/2019/03/16/Rust-函数/" class="has-link-black-ter is-size-6">Rust 函数</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/13/Rust-运算符/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 运算符">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-13T14:22:26.000Z">2019-03-13</time></div>
+                    <a href="/2019/03/13/Rust-运算符/" class="has-link-black-ter is-size-6">Rust 运算符</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/12/Rust的控制流/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 控制流">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-12T15:20:00.000Z">2019-03-12</time></div>
+                    <a href="/2019/03/12/Rust的控制流/" class="has-link-black-ter is-size-6">Rust 控制流</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">三月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">6</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">7</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/React源码阅读/">
+                        <span class="tag">React源码阅读</span>
+                        <span class="tag is-grey">9</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Rust/">
+                        <span class="tag">Rust</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/react16-x-源码逆向/">
+                        <span class="tag">react16.x 源码逆向</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="0b0001从分片调度来看React的调度机制">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-31T09:06:38.000Z">2019-03-31</time></div>
+                    <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="has-link-black-ter is-size-6">0b0001从分片调度来看React的调度机制</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/28/react-16/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="react 16 逆向系列">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-28T15:43:00.000Z">2019-03-28</time></div>
+                    <a href="/2019/03/28/react-16/" class="has-link-black-ter is-size-6">react 16 逆向系列</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/16/Rust-函数/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 函数">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-16T15:38:24.000Z">2019-03-16</time></div>
+                    <a href="/2019/03/16/Rust-函数/" class="has-link-black-ter is-size-6">Rust 函数</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/13/Rust-运算符/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 运算符">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-13T14:22:26.000Z">2019-03-13</time></div>
+                    <a href="/2019/03/13/Rust-运算符/" class="has-link-black-ter is-size-6">Rust 运算符</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/12/Rust的控制流/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 控制流">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-12T15:20:00.000Z">2019-03-12</time></div>
+                    <a href="/2019/03/12/Rust的控制流/" class="has-link-black-ter is-size-6">Rust 控制流</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">三月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">6</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">7</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/React源码阅读/">
+                        <span class="tag">React源码阅读</span>
+                        <span class="tag is-grey">9</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Rust/">
+                        <span class="tag">Rust</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/react16-x-源码逆向/">
+                        <span class="tag">react16.x 源码逆向</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/images/logo.svg" alt="Rust 函数" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2019 Jeremy Wu&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a
+                        href="http://github.com/ppoffice/hexo-theme-icarus" target="_blank">Icarus</a>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://unpkg.com/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("zh-CN");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://unpkg.com/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://unpkg.com/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://unpkg.com/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://unpkg.com/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="回到顶端" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://unpkg.com/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+    
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="想要查找什么..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                CATEGORIES: '分类',
+                TAGS: '标签',
+                UNTITLED: '(无标题)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>

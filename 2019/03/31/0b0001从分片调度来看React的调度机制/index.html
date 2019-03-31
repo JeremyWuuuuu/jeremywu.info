@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html  lang="zh">
+<head>
+    <meta charset="utf-8">
+<title>0b0001从分片调度来看React的调度机制 - Jeremy&#39;s Note</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+
+
+    <meta name="description" content="关键字: React Reconciler Scheduler  分水岭 React v16React 16 与之前的版本最大的不同就在于 React 开发核心团队重写了 React 中相当核心的一部分: 更新策略 Before v16Javascript 与渲染引擎的关系因为 Javascript 语言的并发模型的特殊性, Javascript 的代码被放入执行之后, 就会一直跑到结束">
+<meta name="keywords" content="react16.x 源码逆向">
+<meta property="og:type" content="article">
+<meta property="og:title" content="0b0001从分片调度来看React的调度机制">
+<meta property="og:url" content="https://jeremywu.info/2019/03/31/0b0001从分片调度来看React的调度机制/index.html">
+<meta property="og:site_name" content="Jeremy&#39;s Note">
+<meta property="og:description" content="关键字: React Reconciler Scheduler  分水岭 React v16React 16 与之前的版本最大的不同就在于 React 开发核心团队重写了 React 中相当核心的一部分: 更新策略 Before v16Javascript 与渲染引擎的关系因为 Javascript 语言的并发模型的特殊性, Javascript 的代码被放入执行之后, 就会一直跑到结束">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://jeremywu.info/thumbnails/reactjs.jpg">
+<meta property="og:updated_time" content="2019-03-31T15:49:32.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="0b0001从分片调度来看React的调度机制">
+<meta name="twitter:description" content="关键字: React Reconciler Scheduler  分水岭 React v16React 16 与之前的版本最大的不同就在于 React 开发核心团队重写了 React 中相当核心的一部分: 更新策略 Before v16Javascript 与渲染引擎的关系因为 Javascript 语言的并发模型的特殊性, Javascript 的代码被放入执行之后, 就会一直跑到结束">
+<meta name="twitter:image" content="https://jeremywu.info/thumbnails/reactjs.jpg">
+
+
+
+
+
+<link rel="alternative" href="/atom.xml" title="0b0001从分片调度来看React的调度机制" type="application/atom+xml">
+
+
+
+<link rel="icon" href="/images/favicon.ico">
+
+
+<link rel="stylesheet" href="https://unpkg.com/bulma@0.7.2/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:400,600|Source+Code+Pro">
+<link rel="stylesheet" href="https://unpkg.com/highlight.js@9.12.0/styles/atom-one-light.css">
+
+
+    
+    
+    
+    <style>body>.footer,body>.navbar,body>.section{opacity:0}</style>
+    
+
+    
+    
+    
+    <link rel="stylesheet" href="https://unpkg.com/lightgallery@1.6.8/dist/css/lightgallery.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css">
+    
+
+    
+    
+
+<link rel="stylesheet" href="https://unpkg.com/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.css">
+
+
+    
+    
+    
+    
+
+<link rel="stylesheet" href="/css/back-to-top.css">
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+<link rel="stylesheet" href="/css/progressbar.css">
+<script src="https://unpkg.com/pace-js@1.0.2/pace.min.js"></script>
+
+    
+    
+    
+
+    
+    
+    
+
+
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-3-column">
+    <nav class="navbar navbar-main">
+    <div class="container">
+        <div class="navbar-brand is-flex-center">
+            <a class="navbar-item navbar-logo" href="/">
+            
+                <img src="/images/logo.svg" alt="0b0001从分片调度来看React的调度机制" height="28">
+            
+            </a>
+        </div>
+        <div class="navbar-menu">
+            
+            <div class="navbar-start">
+                
+                <a class="navbar-item"
+                href="/">主页</a>
+                
+                <a class="navbar-item"
+                href="/archives">归档</a>
+                
+                <a class="navbar-item"
+                href="/categories">分类</a>
+                
+                <a class="navbar-item"
+                href="/tags">标签</a>
+                
+                <a class="navbar-item"
+                href="/about">关于</a>
+                
+            </div>
+            
+            <div class="navbar-end">
+                
+                    
+                    
+                    <a class="navbar-item" target="_blank" title="Download on GitHub" href="http://github.com/jeremywuuuuu">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                    
+                
+                
+                
+                <a class="navbar-item search" title="搜索" href="javascript:;">
+                    <i class="fas fa-search"></i>
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</nav>
+    
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-8-tablet is-8-desktop is-6-widescreen has-order-2 column-main"><div class="card">
+    
+    <div class="card-image">
+        <span  class="image is-7by1">
+            <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="0b0001从分片调度来看React的调度机制">
+        </span>
+    </div>
+    
+    <div class="card-content article ">
+        
+        <div class="level article-meta is-size-7 is-uppercase is-mobile is-overflow-x-auto">
+            <div class="level-left">
+                <time class="level-item has-text-grey" datetime="2019-03-31T09:06:38.000Z">2019-03-31</time>
+                
+                <div class="level-item">
+                <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                </div>
+                
+                
+                <span class="level-item has-text-grey">
+                    
+                    
+                    9 分钟 读完 (大约 1368 个字)
+                </span>
+                
+                
+            </div>
+        </div>
+        
+        <h1 class="title is-size-3 is-size-4-mobile has-text-weight-normal">
+            
+                0b0001从分片调度来看React的调度机制
+            
+        </h1>
+        <div class="content">
+            <p><strong>关键字: <code>React</code> <code>Reconciler</code> <code>Scheduler</code> </strong></p>
+<h2 id="分水岭-React-v16"><a href="#分水岭-React-v16" class="headerlink" title="分水岭 React v16"></a>分水岭 React v16</h2><p>React 16 与之前的版本最大的不同就在于 React 开发核心团队重写了 React 中相当核心的一部分: <strong>更新策略</strong></p>
+<h3 id="Before-v16"><a href="#Before-v16" class="headerlink" title="Before v16"></a>Before v16</h3><h4 id="Javascript-与渲染引擎的关系"><a href="#Javascript-与渲染引擎的关系" class="headerlink" title="Javascript 与渲染引擎的关系"></a>Javascript 与渲染引擎的关系</h4><p>因为 Javascript 语言的<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop" target="_blank" rel="noopener">并发模型</a>的特殊性, Javascript 的代码被放入执行之后, 就会一直跑到结束<br><a id="more"></a><br><figure class="highlight javascript hljs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;</span><br><span class="line">  <span class="hljs-comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样的代码会直接导致浏览器没有响应 (不要随意尝试). 由于执行 Javascript 和浏览器页面内容更新计算都是发生在主线程 (Main Thread), 当 Javascript 被执行完, 会生成新的 <a href="https://developers.google.com/web/fundamentals/performance/critical-rendering-path/render-tree-construction" target="_blank" rel="noopener">渲染树</a>, 整个过程如下图</p>
+<blockquote>
+<img src="/2019/03/31/0b0001从分片调度来看React的调度机制/frame-full.jpg" title="frame full">
+<center><strong>Fig.1 帧更新 (图片来自于 <a href="https://developer.google.com" target="_blank" rel="noopener">Google Developers</a>)</strong></center>
+</blockquote>
+<p>一般来讲, 这几个流程中的前三个过程都是发生在 CPU 中, 也就是所谓的 <code>Main Thread</code> 中, 剩下两个过程是将计算结果交由 GPU 来执行. 其中, 第三步 <code>layout</code> 也是可以跳过的, 具体的优化步骤可以参见<a href="https://developers.google.com/web/fundamentals/performance/rendering/" target="_blank" rel="noopener">渲染性能优化</a></p>
+<h4 id="React-的更新调度策略"><a href="#React-的更新调度策略" class="headerlink" title="React 的更新调度策略"></a>React 的更新调度策略</h4><p>React 在 v16 之前的更新调度策略是, 每当有更新发生, 便会从启动本次更新的节点开始, 一直往下计算节点的变更, 直到最后一个节点被计算完 (这是一个递归过程), 才会根据计算出的新 <code>v-dom</code> 树去与旧树比较进行一轮批量更新, 然后该次更新完毕后, 新的渲染树被生成, 最终被画在了屏幕上. 过程如下图所示, 这个更新调度策略被大家称为 <code>栈调度 (stack reconciler)</code><br><img src="/2019/03/31/0b0001从分片调度来看React的调度机制/react-update-frame.jpg" title="react update frame"></p>
+<center><strong>Fig.2 React 更新流程</strong></center>
+
+<p>由于人眼对于动画的感知必须是在 <code>60 fps</code> 下才不会感觉到有卡顿, 也就是说每一帧(画面)更新的时间仅有 1000ms / 60 = <code>~16ms</code> 左右, 如果更新周期内浏览器主线程并没有时间来更新画面, 便会产生<code>抛弃帧 (frame drop)</code>, 也就是说, 当抛弃帧发生时, 用户看到的动画会突然从一个位置飞到另一个位置, 造成卡顿(jank).<br>正是由于 Javascript 的特殊性, 如果当前更新的节点较多 (亦或是计算足够复杂消耗 CPU), 那么即使 React 本身有着足够优越的性能, 也没有办法避免抛弃帧的发生, 一旦更新任务耗时太久, 或者计算非常复杂, 主线程就会被阻塞, 这样一来, 用户的交互也没有办法得到响应 (如: 选择, 输入等).<br>正因如此, React 核心团队决定重构 React 的更新调度策略…</p>
+<h3 id="After-v16"><a href="#After-v16" class="headerlink" title="After v16"></a>After v16</h3><h4 id="React-Fiber"><a href="#React-Fiber" class="headerlink" title="React Fiber"></a>React Fiber</h4><p>得益于 React 中的 <code>v-dom</code>, React 的性能十分出色, 但由于用户代码对于 React 来说<strong>实在是太不可控</strong>, 并且 React 也实在是没有办法能够去强制规定使用者的代码风格(质量), 于是 React 的核心团队决定让 React 更快, 并且不会因为更新任务过于繁重从而造成主线程无响应. 所以 <code>Fiber</code> 被引进了</p>
+<ul>
+<li>Fiber 是一种编程思想, 是一种<strong>非抢占式</strong>的多线程模型, 和 <code>CoRoutine</code> 是同一个概念</li>
+<li>React Fiber 中的概念是, React Fiber 会主动退出更新任务的运行, 从而交还给浏览器去做更新操作, 当浏览器操作结束后, 会主动将控制权返还给 React Fiber, 进而继续更新工作.</li>
+<li>React Fiber 的调度器是通过 <code>requestAnimationFrame</code> 和 <code>setTimeout</code> 来实现的.</li>
+</ul>
+<img src="/2019/03/31/0b0001从分片调度来看React的调度机制/fiber_work_loop.png" title="fiber work loop">
+<center>Made with ❤️ by Lin Clark at ReactConf 2017</center>
+
+<h4 id="Phase"><a href="#Phase" class="headerlink" title="Phase"></a>Phase</h4><p>Fiber 将更新分为两个阶段</p>
+<h5 id="Computation"><a href="#Computation" class="headerlink" title="Computation"></a>Computation</h5><p>这个阶段是 React 计算哪些地方需要更新的阶段, 这个阶段是可以被打断的阶段, 也就是说, 在这个阶段, React 更新每运行一小段时间, 就会将控制权交还给浏览器去响应交互或更新, 然后再空闲时间回到当前的更新阶段, 但是, 由于跟响应用户交互时, 可能会有新的更新插入, 于是之前计算过的那些计算结果可能就没有办法使用了, 之前的计算结果就会被抛弃, 重新进行计算. 并且, 在这些的基础之上, 更新的操作也是有着优先级之分的, 优先级高的更新优先被计算, 优先级低的必须等优先级高的被计算完之后才能被计算.<br>这也是为什么 <code>componentWillMount</code>, <code>UNSTABLE_componentWillUpdate</code> 会被多次调用的原因.</p>
+<h5 id="Commit"><a href="#Commit" class="headerlink" title="Commit"></a>Commit</h5><p>这个阶段是实际触发 DOM 更新的阶段, 并且该阶段不会被打断, 也就是说, 一旦进入这个阶段, 更新就会被全部完成, 浏览器在收到更新的通知之后便会去更新页面.</p>
+<h4 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h4><p>经历这两个阶段, 一次更新也就算完成了, 但由于阶段一存在优先级, 一个新的问题又被引入了, 那就是 <code>Starving Task</code>, 这是由于如果一直有优先级高的更新插入队列中, 那么优先级低的更新就永远无法被触发, 就会引起一系列的问题.</p>
+<h3 id="UpComing"><a href="#UpComing" class="headerlink" title="UpComing..."></a><code>UpComing...</code></h3><p><a href="">React Fiber 调度器的实现</a></p>
+
+        </div>
+        
+        <div class="level is-size-7 is-uppercase">
+            <div class="level-start">
+                <div class="level-item">
+                    <span class="is-size-6 has-text-grey has-mr-7">#</span>
+                    <a class="has-link-grey -link" href="/tags/react16-x-源码逆向/">react16.x 源码逆向</a>
+                </div>
+            </div>
+        </div>
+        
+        
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="menu-label has-text-centered">喜欢这篇文章？打赏一下作者吧</h3>
+        <div class="buttons is-centered">
+            
+                
+<a class="button is-success donate">
+    <span class="icon is-small">
+        <i class="fab fa-weixin"></i>
+    </span>
+    <span>微信</span>
+    <div class="qrcode"><img src="/images/wechat_award.JPG" alt="微信"></div>
+</a>
+
+                
+        </div>
+    </div>
+</div>
+
+
+
+<div class="card card-transparent">
+    <div class="level post-navigation is-flex-wrap is-mobile">
+        
+        
+        <div class="level-end">
+            <a class="level level-item has-link-grey  article-nav-next" href="/2019/03/28/react-16/">
+                <span class="level-item">react 16 逆向系列</span>
+                <i class="level-item fas fa-chevron-right"></i>
+            </a>
+        </div>
+        
+    </div>
+</div>
+
+
+
+<div class="card">
+    <div class="card-content">
+        <h3 class="title is-5 has-text-weight-normal">评论</h3>
+        
+<script>
+    var disqus_config = function () {
+        this.page.url = 'https://jeremywu.info/2019/03/31/0b0001从分片调度来看React的调度机制/';
+        this.page.identifier = '2019/03/31/0b0001从分片调度来看React的调度机制/';
+    };
+    (function() {
+        var d = document, s = d.createElement('script');  
+        s.src = '//' + 'jeremywuuuuu' + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+
+<div id="disqus_thread">
+    
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+    </div>
+</div>
+</div>
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen  has-order-1 column-left ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <nav class="level">
+            <div class="level-item has-text-centered">
+                <div>
+                    
+                        <figure class="image container is-128x128 has-mb-6">
+                            <img class="is-rounded" src="https://avatars1.githubusercontent.com/u/15975785?s=400&amp;u=13cb1c03b97f7d290a138111bd614ace3bfc55f0&amp;v=4" alt="Jeremy Wu">
+                        </figure>
+                    
+                    
+                    <p class="is-size-4 is-block">
+                        Jeremy Wu
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-block">
+                        Software Developer
+                    </p>
+                    
+                    
+                    <p class="is-size-6 is-flex is-flex-center has-text-grey">
+                        <i class="fas fa-map-marker-alt has-mr-7"></i>
+                        <span>Shanghai, China</span>
+                    </p>
+                    
+                </div>
+            </div>
+        </nav>
+        <nav class="level is-mobile">
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        文章
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        15
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        分类
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        3
+                    </p>
+                </div>
+            </div>
+            <div class="level-item has-text-centered is-marginless">
+                <div>
+                    <p class="heading">
+                        标签
+                    </p>
+                    <p class="title has-text-weight-normal">
+                        3
+                    </p>
+                </div>
+            </div>
+        </nav>
+        <div class="level">
+            <a class="level-item button is-link is-rounded" href="http://github.com/jeremywuuuuu" target="_blank">
+                关注我</a>
+        </div>
+        
+        
+        <div class="level is-mobile">
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Github" href="http://github.com/jeremywuuuuu">
+                
+                <i class="fab fa-github"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Facebook" href="http://facebook.com">
+                
+                <i class="fab fa-facebook"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Twitter" href="http://twitter.com/591449570">
+                
+                <i class="fab fa-twitter"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="Dribbble" href="http://dribbble.com">
+                
+                <i class="fab fa-dribbble"></i>
+                
+            </a>
+            
+            <a class="level-item button is-white is-marginless" target="_blank"
+                title="RSS" href="/">
+                
+                <i class="fas fa-rss"></i>
+                
+            </a>
+            
+        </div>
+        
+    </div>
+</div>
+    
+        
+    
+        
+
+
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                分类
+            </h3>
+            <ul class="menu-list">
+            <li>
+        <a class="level is-marginless" href="/categories/React16逆向系列/">
+            <span class="level-start">
+                <span class="level-item">React16逆向系列</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">2</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/React源码阅读系列/">
+            <span class="level-start">
+                <span class="level-item">React源码阅读系列</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">9</span>
+            </span>
+        </a></li><li>
+        <a class="level is-marginless" href="/categories/Rust-lang/">
+            <span class="level-start">
+                <span class="level-item">Rust lang</span>
+            </span>
+            <span class="level-end">
+                <span class="level-item tag">4</span>
+            </span>
+        </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            标签云
+        </h3>
+        <a href="/tags/React源码阅读/" style="font-size: 20px;">React源码阅读</a> <a href="/tags/Rust/" style="font-size: 15px;">Rust</a> <a href="/tags/react16-x-源码逆向/" style="font-size: 10px;">react16.x 源码逆向</a>
+    </div>
+</div>
+
+    
+    
+        <div class="column-right-shadow is-hidden-widescreen ">
+        
+            
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="0b0001从分片调度来看React的调度机制">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-31T09:06:38.000Z">2019-03-31</time></div>
+                    <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="has-link-black-ter is-size-6">0b0001从分片调度来看React的调度机制</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/28/react-16/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="react 16 逆向系列">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-28T15:43:00.000Z">2019-03-28</time></div>
+                    <a href="/2019/03/28/react-16/" class="has-link-black-ter is-size-6">react 16 逆向系列</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/16/Rust-函数/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 函数">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-16T15:38:24.000Z">2019-03-16</time></div>
+                    <a href="/2019/03/16/Rust-函数/" class="has-link-black-ter is-size-6">Rust 函数</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/13/Rust-运算符/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 运算符">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-13T14:22:26.000Z">2019-03-13</time></div>
+                    <a href="/2019/03/13/Rust-运算符/" class="has-link-black-ter is-size-6">Rust 运算符</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/12/Rust的控制流/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 控制流">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-12T15:20:00.000Z">2019-03-12</time></div>
+                    <a href="/2019/03/12/Rust的控制流/" class="has-link-black-ter is-size-6">Rust 控制流</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">三月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">6</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">7</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+        
+            <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/React源码阅读/">
+                        <span class="tag">React源码阅读</span>
+                        <span class="tag is-grey">9</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Rust/">
+                        <span class="tag">Rust</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/react16-x-源码逆向/">
+                        <span class="tag">react16.x 源码逆向</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+        
+        </div>
+    
+</div>
+
+                
+
+
+
+
+<div class="column is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only has-order-3 column-right ">
+    
+        
+<div class="card widget">
+    <div class="card-content">
+        <h3 class="menu-label">
+            最新文章
+        </h3>
+        
+        <article class="media">
+            
+            <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="0b0001从分片调度来看React的调度机制">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-31T09:06:38.000Z">2019-03-31</time></div>
+                    <a href="/2019/03/31/0b0001从分片调度来看React的调度机制/" class="has-link-black-ter is-size-6">0b0001从分片调度来看React的调度机制</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/28/react-16/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/reactjs.jpg" alt="react 16 逆向系列">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-28T15:43:00.000Z">2019-03-28</time></div>
+                    <a href="/2019/03/28/react-16/" class="has-link-black-ter is-size-6">react 16 逆向系列</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/React16逆向系列/">React16逆向系列</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/16/Rust-函数/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 函数">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-16T15:38:24.000Z">2019-03-16</time></div>
+                    <a href="/2019/03/16/Rust-函数/" class="has-link-black-ter is-size-6">Rust 函数</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/13/Rust-运算符/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 运算符">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-13T14:22:26.000Z">2019-03-13</time></div>
+                    <a href="/2019/03/13/Rust-运算符/" class="has-link-black-ter is-size-6">Rust 运算符</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+        <article class="media">
+            
+            <a href="/2019/03/12/Rust的控制流/" class="media-left">
+                <p class="image is-64x64">
+                    <img class="thumbnail" src="/thumbnails/rustlang.jpg" alt="Rust 控制流">
+                </p>
+            </a>
+            
+            <div class="media-content">
+                <div class="content">
+                    <div><time class="has-text-grey is-size-7 is-uppercase" datetime="2019-03-12T15:20:00.000Z">2019-03-12</time></div>
+                    <a href="/2019/03/12/Rust的控制流/" class="has-link-black-ter is-size-6">Rust 控制流</a>
+                    <p class="is-size-7 is-uppercase">
+                        <a class="has-link-grey -link" href="/categories/Rust-lang/">Rust lang</a>
+                    </p>
+                </div>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+        <h3 class="menu-label">
+            归档
+        </h3>
+        <ul class="menu-list">
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2019/03/">
+                <span class="level-start">
+                    <span class="level-item">三月 2019</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">6</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/08/">
+                <span class="level-start">
+                    <span class="level-item">八月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">2</span>
+                </span>
+            </a>
+        </li>
+        
+        <li>
+            <a class="level is-marginless" href="/archives/2018/07/">
+                <span class="level-start">
+                    <span class="level-item">七月 2018</span>
+                </span>
+                <span class="level-end">
+                    <span class="level-item tag">7</span>
+                </span>
+            </a>
+        </li>
+        
+        </ul>
+        </div>
+    </div>
+</div>
+    
+        <div class="card widget">
+    <div class="card-content">
+        <div class="menu">
+            <h3 class="menu-label">
+                标签
+            </h3>
+            <div class="field is-grouped is-grouped-multiline">
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/React源码阅读/">
+                        <span class="tag">React源码阅读</span>
+                        <span class="tag is-grey">9</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/Rust/">
+                        <span class="tag">Rust</span>
+                        <span class="tag is-grey">4</span>
+                    </a>
+                </div>
+                
+                <div class="control">
+                    <a class="tags has-addons" href="/tags/react16-x-源码逆向/">
+                        <span class="tag">react16.x 源码逆向</span>
+                        <span class="tag is-grey">2</span>
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+    
+    
+</div>
+
+            </div>
+        </div>
+    </section>
+    <footer class="footer">
+    <div class="container">
+        <div class="level">
+            <div class="level-start has-text-centered-mobile">
+                <a class="footer-logo is-block has-mb-6" href="/">
+                
+                    <img src="/images/logo.svg" alt="0b0001从分片调度来看React的调度机制" height="28">
+                
+                </a>
+                <p class="is-size-7">
+                &copy; 2019 Jeremy Wu&nbsp;
+                Powered by <a href="http://hexo.io/" target="_blank">Hexo</a> & <a
+                        href="http://github.com/ppoffice/hexo-theme-icarus" target="_blank">Icarus</a>
+                
+                </p>
+            </div>
+            <div class="level-end">
+            
+                <div class="field has-addons is-flex-center-mobile has-mt-5-mobile is-flex-wrap is-flex-middle">
+                
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Creative Commons" href="https://creativecommons.org/">
+                        
+                        <i class="fab fa-creative-commons"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/">
+                        
+                        <i class="fab fa-creative-commons-by"></i>
+                        
+                    </a>
+                </p>
+                
+                <p class="control">
+                    <a class="button is-white is-large" target="_blank" title="Download on GitHub" href="http://github.com/ppoffice/hexo-theme-icarus">
+                        
+                        <i class="fab fa-github"></i>
+                        
+                    </a>
+                </p>
+                
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</footer>
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://unpkg.com/moment@2.22.2/min/moment-with-locales.min.js"></script>
+<script>moment.locale("zh-CN");</script>
+
+
+    
+    
+    
+    <script src="/js/animation.js"></script>
+    
+
+    
+    
+    
+    <script src="https://unpkg.com/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script>
+    <script src="https://unpkg.com/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script>
+    <script src="/js/gallery.js" defer></script>
+    
+
+    
+    
+
+<div id="outdated">
+    <h6>Your browser is out-of-date!</h6>
+    <p>Update your browser to view this website correctly. <a id="btnUpdateBrowser" href="http://outdatedbrowser.com/">Update
+            my browser now </a></p>
+    <p class="last"><a href="#" id="btnCloseUpdateBrowser" title="Close">&times;</a></p>
+</div>
+<script src="https://unpkg.com/outdatedbrowser@1.1.5/outdatedbrowser/outdatedbrowser.min.js" defer></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        outdatedBrowser({
+            bgColor: '#f25648',
+            color: '#ffffff',
+            lowerThan: 'flex'
+        });
+    });
+</script>
+
+
+    
+    
+<script src="https://unpkg.com/mathjax@2.7.5/unpacked/MathJax.js?config=TeX-MML-AM_CHTML" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    MathJax.Hub.Config({
+        'HTML-CSS': {
+            matchFontHeight: false
+        },
+        SVG: {
+            matchFontHeight: false
+        },
+        CommonHTML: {
+            matchFontHeight: false
+        },
+        tex2jax: {
+            inlineMath: [
+                ['$','$'],
+                ['\\(','\\)']
+            ]
+        }
+    });
+});
+</script>
+
+    
+    
+
+<a id="back-to-top" title="回到顶端" href="javascript:;">
+    <i class="fas fa-chevron-up"></i>
+</a>
+<script src="/js/back-to-top.js" defer></script>
+
+
+    
+    
+
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <script src="https://unpkg.com/clipboard@2.0.4/dist/clipboard.min.js" defer></script>
+    <script src="/js/clipboard.js" defer></script>
+    
+
+    
+    
+    
+
+
+<script src="/js/main.js" defer></script>
+
+    
+    <div class="searchbox ins-search">
+    <div class="searchbox-container ins-search-container">
+        <div class="searchbox-input-wrapper">
+            <input type="text" class="searchbox-input ins-search-input" placeholder="想要查找什么..." />
+            <span class="searchbox-close ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="searchbox-result-wrapper ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+    (function (window) {
+        var INSIGHT_CONFIG = {
+            TRANSLATION: {
+                POSTS: '文章',
+                PAGES: '页面',
+                CATEGORIES: '分类',
+                TAGS: '标签',
+                UNTITLED: '(无标题)',
+            },
+            CONTENT_URL: '/content.json',
+        };
+        window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+    })(window);
+</script>
+<script src="/js/insight.js" defer></script>
+<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="/css/insight.css">
+    
+</body>
+</html>
